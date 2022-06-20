@@ -10,3 +10,6 @@ docker-compose up -d
 ```bash
 docker exec -it <ID контейнера> /bin/bash
 ```
+
+Чтобы работать с MySQL которая находится на той же машине, 
+что и контейнер с PHP необходимо в строке подключения указать хост `host.docker.internal`
