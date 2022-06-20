@@ -16,6 +16,10 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 
 COPY . /var/www
 
+RUN composer install
+
+#RUN bin/console --no-interaction doctrine:migrations:migrate
+
 EXPOSE 9000
 
 CMD ["php-fpm"]
