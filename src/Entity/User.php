@@ -27,6 +27,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'string', unique: true)]
     private string $email;
 
+    #[ORM\Column(name: 'created_at', type: 'datetime_immutable', nullable: false, options: ['default' => 'NOW()'])]
+    private \DateTimeImmutable $createdAt;
+
+    #[ORM\Column(name: 'deleted_at', type: 'datetime_immutable', nullable: true, options: ['default' => null])]
+    private ?\DateTimeImmutable $deletedAt;
+
     public function getEmail(): string
     {
         return $this->email;
