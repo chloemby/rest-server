@@ -6,6 +6,7 @@ use App\Repository\UserRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
@@ -16,6 +17,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private int $id;
 
     #[ORM\Column(type: 'string', length: 180, unique: true)]
+    #[Assert\Length(
+        min: 4,
+        max: 30,
+        minMessage: 'Логин должен быть не короче {{ limit }} символов',
+        maxMessage: 'Логин не должен быть длиннее {{ limit }} символов'
+    )]
     private string $username;
 
     #[ORM\Column(type: 'json')]
@@ -25,6 +32,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private string $password;
 
     #[ORM\Column(type: 'string', unique: true)]
+    #[Assert\NotBlank(message: 'Не указан адрес электронной почты')]
+    #[Assert\Email(message: 'Некорректный адрес электронной почты')]
     private string $email;
 
     #[ORM\Column(name: 'created_at', type: 'datetime_immutable', nullable: false, options: ['default' => 'NOW()'])]
