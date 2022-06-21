@@ -34,9 +34,9 @@ class AuthController extends AbstractController
 
             return new JsonResponse(['username' => $user->getUserIdentifier()]);
         } catch (AppException $e) {
-            return new JsonResponse($e->getMessage(), $e->getCode());
-        } catch (\Throwable) {
-            return new JsonResponse('Неизвестная ошибка', Response::HTTP_INTERNAL_SERVER_ERROR);
+            return new JsonResponse(['message' => $e->getMessage()], $e->getCode());
+        } catch (\Throwable $e) {
+            return new JsonResponse(['message' => 'Неизвестная ошибка'], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -48,9 +48,9 @@ class AuthController extends AbstractController
         try {
             return new JsonResponse(['token' => $service->login($user)]);
         } catch (AppException $e) {
-            return new JsonResponse($e->getMessage(), $e->getCode());
+            return new JsonResponse(['message' => $e->getMessage()], $e->getCode());
         } catch (\Throwable $e) {
-            return new JsonResponse($e->getMessage());
+            return new JsonResponse(['message' => 'Неизвестная ошибка'], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 }
