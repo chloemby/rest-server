@@ -7,9 +7,8 @@ namespace App\Service\Auth\Registration;
 use App\Entity\User;
 use App\Exception\ValidationException;
 use App\Repository\UserRepository;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
-use Symfony\Component\Validator\ConstraintViolationInterface;
-use Symfony\Component\Validator\Exception\ValidationFailedException;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class RegistrationService
@@ -33,6 +32,13 @@ class RegistrationService
      */
     public function register(UserRegistrationData $userRegistrationInfo): User
     {
+        if ($this->isUserExist($userRegistrationInfo)) {
+            throw new ValidationException(
+                'Пользователь с таким именем/почтой уже существует',
+                Response::HTTP_BAD_REQUEST
+            );
+        }
+
         $user = new User();
 
         $user->setUsername($userRegistrationInfo->getUsername())
@@ -44,6 +50,14 @@ class RegistrationService
         $this->userRepository->add($user, flush: true);
 
         return $user;
+    }
+
+    private function isUserExist(UserRegistrationData $userRegistrationInfo): bool
+    {
+        return $this->userRepository->findByUsernameOrEmail(
+            $userRegistrationInfo->getUsername(),
+            $userRegistrationInfo->getEmail()
+        ) !== [];
     }
 
     /**
