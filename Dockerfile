@@ -18,7 +18,7 @@ COPY . /var/www
 
 RUN composer install
 
-#RUN bin/console --no-interaction doctrine:migrations:migrate
+RUN bin/console --no-interaction doctrine:migrations:migrate
 
 EXPOSE 9000
 
