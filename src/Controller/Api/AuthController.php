@@ -8,6 +8,10 @@ use App\Exception\AppException;
 use App\Service\Auth\Login\LoginService;
 use App\Service\Auth\Registration\RegistrationService;
 use App\Service\Auth\Registration\UserRegistrationData;
+use OpenApi\Attributes\JsonContent;
+use OpenApi\Attributes\Parameter;
+use OpenApi\Attributes\Property;
+use OpenApi\Attributes\RequestBody;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -18,6 +22,27 @@ use Symfony\Component\Security\Core\User\UserInterface;
 #[Route(path: '/api/auth')]
 class AuthController extends AbstractController
 {
+    #[Parameter(name: 'username', description: 'Имя пользователя', required: true)]
+    #[Parameter(name: 'password', description: 'Пароль пользователя', required: true)]
+    #[Parameter(name: 'email', description: 'Электронная почта пользователя', required: true)]
+    #[\OpenApi\Attributes\Response(
+        response: Response::HTTP_OK,
+        description: 'Пользователь успешно зарегистрирован',
+        content: new JsonContent(
+            properties: [new Property(property: 'username', description: 'Имя пользователя', type: 'string')],
+            type: 'object'
+        )
+    )]
+    #[\OpenApi\Attributes\Response(
+        response: Response::HTTP_BAD_REQUEST,
+        description: 'Произошла ошибка в процессе регистрации',
+        content: new JsonContent(properties: [new Property(property: 'message', type: 'string')], type: 'object'),
+    )]
+    #[\OpenApi\Attributes\Response(
+        response: Response::HTTP_INTERNAL_SERVER_ERROR,
+        description: 'Произошла неизвестная ошибка',
+        content: new JsonContent(properties: [new Property(property: 'message', type: 'string')], type: 'object')
+    )]
     #[Route(path: '/register', name: 'api-auth-register', methods: [Request::METHOD_POST])]
     public function registerAction(
         Request $request,
@@ -35,11 +60,41 @@ class AuthController extends AbstractController
             return new JsonResponse(['username' => $user->getUserIdentifier()]);
         } catch (AppException $e) {
             return new JsonResponse(['message' => $e->getMessage()], $e->getCode());
-        } catch (\Throwable $e) {
+        } catch (\Throwable) {
             return new JsonResponse(['message' => 'Неизвестная ошибка'], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
+    #[RequestBody(
+        description: 'Данные для входа',
+        content: new JsonContent(
+            properties: [
+                new Property(property: 'username', type: 'string'),
+                new Property(property: 'password', type: 'string')
+            ],
+            type: 'object'
+        )
+    )]
+    #[\OpenApi\Attributes\Response(
+        response: Response::HTTP_OK,
+        description: 'OK',
+        content: new JsonContent(
+            properties: [
+                new Property(property: 'token', description: 'Bearer токен аутентификации', type: 'string')
+            ],
+            type: 'object'
+        )
+    )]
+    #[\OpenApi\Attributes\Response(
+        response: Response::HTTP_BAD_REQUEST,
+        description: 'Произошла ошибка в процессе регистрации',
+        content: new JsonContent(properties: [new Property(property: 'message', type: 'string')], type: 'object'),
+    )]
+    #[\OpenApi\Attributes\Response(
+        response: Response::HTTP_INTERNAL_SERVER_ERROR,
+        description: 'Произошла неизвестная ошибка',
+        content: new JsonContent(properties: [new Property(property: 'message', type: 'string')], type: 'object')
+    )]
     #[Route(path: '/login', name: 'api-auth-login', methods: [Request::METHOD_POST])]
     public function loginAction(
         UserInterface $user,
