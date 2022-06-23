@@ -23,3 +23,9 @@ docker exec -it <ID контейнера> /bin/bash
 #Авторизация и аутентификация
 
 Необходимо сгенерировать ключи: `bin/console lexik:jwt:generate-keypair`
+
+#Swagger
+
+После запуска контейнера, по адресу `127.0.0.1:81/api/doc`
+можно найти Swagger документацию к API
+
