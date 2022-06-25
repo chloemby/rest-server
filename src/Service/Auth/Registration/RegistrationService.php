@@ -45,7 +45,7 @@ class RegistrationService
             ->setPassword($this->userPasswordHasher->hashPassword($user, $userRegistrationInfo->getPassword()))
             ->setEmail($userRegistrationInfo->getEmail());
 
-        $this->validate($user);
+        $this->validate($user, $userRegistrationInfo->getPassword());
 
         $this->userRepository->add($user, flush: true);
 
@@ -63,11 +63,15 @@ class RegistrationService
     /**
      * @throws ValidationException
      */
-    private function validate(User $user): void
+    private function validate(User $user, string $plainPassword): void
     {
         $violations = $this->validator->validate($user);
 
-        if ($this->validator->validate($user)->count() > 0) {
+        $violations->addAll(
+            $this->validator->validatePropertyValue($user, 'password', $plainPassword)
+        );
+
+        if ($violations->count() > 0) {
             throw new ValidationException($violations->get(0)->getMessage());
         }
     }

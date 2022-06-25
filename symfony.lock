@@ -63,6 +63,9 @@
             "config/routes/nelmio_api_doc.yaml"
         ]
     },
+    "rollerworks/password-strength-bundle": {
+        "version": "v2.2.3"
+    },
     "symfony/console": {
         "version": "5.4",
         "recipe": {
@@ -138,6 +141,19 @@
         },
         "files": [
             "config/packages/security.yaml"
+        ]
+    },
+    "symfony/translation": {
+        "version": "5.4",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "main",
+            "version": "5.3",
+            "ref": "da64f5a2b6d96f5dc24914517c0350a5f91dee43"
+        },
+        "files": [
+            "config/packages/translation.yaml",
+            "translations/.gitignore"
         ]
     },
     "symfony/twig-bundle": {
