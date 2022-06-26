@@ -7,6 +7,8 @@ namespace App\Service\Auth\Registration;
 use App\Entity\User;
 use App\Exception\ValidationException;
 use App\Repository\UserRepository;
+use App\UserRole;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -16,15 +18,18 @@ class RegistrationService
     private UserRepository $userRepository;
     private UserPasswordHasherInterface $userPasswordHasher;
     private ValidatorInterface $validator;
+    private EventDispatcherInterface $eventDispatcher;
 
     public function __construct(
         UserRepository $userRepository,
         UserPasswordHasherInterface $userPasswordHasher,
-        ValidatorInterface $validator
+        ValidatorInterface $validator,
+        EventDispatcherInterface $eventDispatcher,
     ) {
         $this->userRepository = $userRepository;
         $this->userPasswordHasher = $userPasswordHasher;
         $this->validator = $validator;
+        $this->eventDispatcher = $eventDispatcher;
     }
 
     /**
@@ -43,11 +48,14 @@ class RegistrationService
 
         $user->setUsername($userRegistrationInfo->getUsername())
             ->setPassword($this->userPasswordHasher->hashPassword($user, $userRegistrationInfo->getPassword()))
-            ->setEmail($userRegistrationInfo->getEmail());
+            ->setEmail($userRegistrationInfo->getEmail())
+            ->setRoles([UserRole::USER->value]);
 
         $this->validate($user, $userRegistrationInfo->getPassword());
 
         $this->userRepository->add($user, flush: true);
+
+        $this->eventDispatcher->dispatch(new UserPassedRegistrationEvent($user));
 
         return $user;
     }
