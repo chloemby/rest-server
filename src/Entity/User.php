@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use App\UserRole;
 use Doctrine\ORM\Mapping as ORM;
 use Rollerworks\Component\PasswordStrength\Validator\Constraints\PasswordStrength;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
@@ -38,7 +39,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Assert\Email(message: 'Некорректный адрес электронной почты')]
     private string $email;
 
-    #[ORM\Column(name: 'created_at', type: 'datetime_immutable', nullable: false, options: ['default' => 'NOW()'])]
+    #[ORM\Column(name: 'created_at', type: 'datetime_immutable', nullable: false)]
     private \DateTimeImmutable $createdAt;
 
     #[ORM\Column(name: 'deleted_at', type: 'datetime_immutable', nullable: true, options: ['default' => null])]
@@ -64,9 +65,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->email;
     }
 
-    public function setEmail(string $email): void
+    public function setEmail(string $email): self
     {
         $this->email = $email;
+
+        return $this;
     }
 
     public function getId(): ?int
@@ -101,14 +104,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     /**
      * @see UserInterface
+     * @return string[] {@see UserRole}
      */
     public function getRoles(): array
     {
-        $roles = $this->roles;
-        // guarantee every user at least has ROLE_USER
-        $roles[] = 'ROLE_USER';
+        return array_unique($this->roles);
+    }
 
-        return array_unique($roles);
+    public function hasRole(UserRole $userRole): bool
+    {
+        return \in_array($userRole->value, $this->getRoles());
     }
 
     public function setRoles(array $roles): self
@@ -134,12 +139,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     }
 
     public function getSalt()
-    {
-        // TODO: Implement getSalt() method.
-    }
+    {}
 
     public function eraseCredentials()
-    {
-        // TODO: Implement eraseCredentials() method.
-    }
+    {}
 }

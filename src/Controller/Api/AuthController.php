@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace App\Controller\Api;
 
+use App\Entity\User;
 use App\Exception\AppException;
 use App\Service\Auth\Login\LoginService;
 use App\Service\Auth\Registration\RegistrationService;
 use App\Service\Auth\Registration\UserRegistrationData;
+use App\Service\Auth\Verification\EmailVerificationService;
+use App\UserRole;
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Parameter;
 use OpenApi\Attributes\Property;
@@ -17,7 +20,10 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Security\Http\Attribute\CurrentUser;
+use SymfonyCasts\Bundle\VerifyEmail\Exception\VerifyEmailExceptionInterface;
 
 #[Route(path: '/api/auth')]
 class AuthController extends AbstractController
@@ -60,8 +66,8 @@ class AuthController extends AbstractController
             return new JsonResponse(['username' => $user->getUserIdentifier()]);
         } catch (AppException $e) {
             return new JsonResponse(['message' => $e->getMessage()], $e->getCode());
-        } catch (\Throwable) {
-            return new JsonResponse(['message' => 'Неизвестная ошибка'], Response::HTTP_INTERNAL_SERVER_ERROR);
+        } catch (\Throwable $e) {
+            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -102,10 +108,32 @@ class AuthController extends AbstractController
     ): JsonResponse {
         try {
             return new JsonResponse(['token' => $service->login($user)]);
-        } catch (AppException $e) {
-            return new JsonResponse(['message' => $e->getMessage()], $e->getCode());
-        } catch (\Throwable $e) {
+        } catch (\Throwable) {
             return new JsonResponse(['message' => 'Неизвестная ошибка'], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
+    }
+
+    #[Route(path: '/verify', name: 'api-auth-verify-email', methods: [Request::METHOD_GET])]
+    public function verifyAction(
+        Request $request,
+        EmailVerificationService $service,
+        #[CurrentUser] ?User $user
+    ): Response {
+        try {
+            if (!$user || !$user->hasRole(UserRole::USER)) {
+                throw new AccessDeniedException();
+            }
+
+            try {
+                $service->verify($user, $request->getUri());
+            } catch (VerifyEmailExceptionInterface $exception) {
+                return new Response('Произошла ошибка: ' . $exception->getReason());
+            }
+
+            return new Response('Success');
+        } catch (AccessDeniedException) {
+            return new JsonResponse(['message' => 'Доступ запрещен'], Response::HTTP_FORBIDDEN);
+        } catch (\Throwable) {
+            return new JsonResponse(['message' => 'Произошла неизвестная ошибка'], Response::HTTP_INTERNAL_SERVER_ERROR);        }
     }
 }
