@@ -20,6 +20,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Http\Attribute\CurrentUser;
 use SymfonyCasts\Bundle\VerifyEmail\Exception\VerifyEmailExceptionInterface;
@@ -119,7 +120,9 @@ class AuthController extends AbstractController
         #[CurrentUser] ?User $user
     ): Response {
         try {
-            $this->denyAccessUnlessGranted(UserRole::VERIFIED_USER->value);
+            if (!$user || !$user->hasRole(UserRole::USER)) {
+                throw new AccessDeniedException();
+            }
 
             try {
                 $service->verify($user, $request->getUri());
@@ -128,8 +131,9 @@ class AuthController extends AbstractController
             }
 
             return new Response('Success');
+        } catch (AccessDeniedException) {
+            return new JsonResponse(['message' => 'Доступ запрещен'], Response::HTTP_FORBIDDEN);
         } catch (\Throwable) {
-            return new JsonResponse(['message' => 'Произошла неизвестная ошибка'], Response::HTTP_INTERNAL_SERVER_ERROR);
-        }
+            return new JsonResponse(['message' => 'Произошла неизвестная ошибка'], Response::HTTP_INTERNAL_SERVER_ERROR);        }
     }
 }
