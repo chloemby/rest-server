@@ -12,3 +12,7 @@ services:
             - '../src/DependencyInjection/'
             - '../src/Entity/'
             - '../src/Kernel.php'
+
+    App\Infrastructure\ExceptionListener:
+        tags:
+            - { name: kernel.event_listener, event: kernel.exception }
