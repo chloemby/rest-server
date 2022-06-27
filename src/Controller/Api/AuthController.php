@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Controller\Api;
 
 use App\Entity\User;
-use App\Exception\AppException;
 use App\Service\Auth\Login\LoginService;
 use App\Service\Auth\Registration\RegistrationService;
 use App\Service\Auth\Registration\UserRegistrationData;
@@ -54,21 +53,15 @@ class AuthController extends AbstractController
         Request $request,
         RegistrationService $service
     ): JsonResponse {
-        try {
-            $userRegistrationData = new UserRegistrationData(
-                (string)$request->get('username'),
-                (string)$request->get('password'),
-                (string)$request->get('email')
-            );
+        $userRegistrationData = new UserRegistrationData(
+            (string)$request->get('username'),
+            (string)$request->get('password'),
+            (string)$request->get('email')
+        );
 
-            $user = $service->register($userRegistrationData);
+        $user = $service->register($userRegistrationData);
 
-            return new JsonResponse(['username' => $user->getUserIdentifier()]);
-        } catch (AppException $e) {
-            return new JsonResponse(['message' => $e->getMessage()], $e->getCode());
-        } catch (\Throwable $e) {
-            return new JsonResponse(['message' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
-        }
+        return new JsonResponse(['username' => $user->getUserIdentifier()]);
     }
 
     #[RequestBody(
@@ -106,11 +99,7 @@ class AuthController extends AbstractController
         UserInterface $user,
         LoginService $service
     ): JsonResponse {
-        try {
-            return new JsonResponse(['token' => $service->login($user)]);
-        } catch (\Throwable) {
-            return new JsonResponse(['message' => 'Неизвестная ошибка'], Response::HTTP_INTERNAL_SERVER_ERROR);
-        }
+        return new JsonResponse(['token' => $service->login($user)]);
     }
 
     #[Route(path: '/verify', name: 'api-auth-verify-email', methods: [Request::METHOD_GET])]
@@ -119,21 +108,16 @@ class AuthController extends AbstractController
         EmailVerificationService $service,
         #[CurrentUser] ?User $user
     ): Response {
+        if (!$user || !$user->hasRole(UserRole::USER)) {
+            throw new AccessDeniedException();
+        }
+
         try {
-            if (!$user || !$user->hasRole(UserRole::USER)) {
-                throw new AccessDeniedException();
-            }
+            $service->verify($user, $request->getUri());
+        } catch (VerifyEmailExceptionInterface $exception) {
+            return new Response('Произошла ошибка: ' . $exception->getReason());
+        }
 
-            try {
-                $service->verify($user, $request->getUri());
-            } catch (VerifyEmailExceptionInterface $exception) {
-                return new Response('Произошла ошибка: ' . $exception->getReason());
-            }
-
-            return new Response('Success');
-        } catch (AccessDeniedException) {
-            return new JsonResponse(['message' => 'Доступ запрещен'], Response::HTTP_FORBIDDEN);
-        } catch (\Throwable) {
-            return new JsonResponse(['message' => 'Произошла неизвестная ошибка'], Response::HTTP_INTERNAL_SERVER_ERROR);        }
+        return new Response('Success');
     }
 }
