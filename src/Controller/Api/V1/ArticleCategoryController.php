@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Api\V1;
 
+use App\Entity\ArticleCategory;
 use JsonException;
 use App\Entity\User;
 use App\Exception\NotFoundException;
@@ -11,6 +12,12 @@ use App\Exception\ValidationException;
 use App\Service\ArticleCategory\ArticleCategoryService;
 use App\Service\ArticleCategory\CreateArticleCategoryRequest;
 use App\Service\ArticleCategory\UpdateArticleCategoryRequest;
+use Nelmio\ApiDocBundle\Annotation\Model;
+use OpenApi\Attributes\JsonContent;
+use OpenApi\Attributes\Parameter;
+use OpenApi\Attributes\Property;
+use OpenApi\Attributes\RequestBody;
+use OpenApi\Attributes\Response;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -29,6 +36,11 @@ class ArticleCategoryController extends AbstractController
         $this->service = $service;
     }
 
+    #[Response(
+        response: \Symfony\Component\HttpFoundation\Response::HTTP_OK,
+        description: 'Получение категории по ID',
+        content: new JsonContent(properties: [new Property(property: 'data', ref: new Model(type: ArticleCategory::class))])
+    )]
     #[Route(path: '/{id<\d+>}', name: 'api-v1-get_article-category-by-id', methods: [Request::METHOD_GET])]
     public function getByIdAction(int $id, #[CurrentUser] ?User $user): JsonResponse
     {
@@ -44,6 +56,16 @@ class ArticleCategoryController extends AbstractController
     /**
      * @throws ValidationException
      */
+    #[Parameter(name: 'title', description: 'Название категории', required: true)]
+    #[Response(
+        response: \Symfony\Component\HttpFoundation\Response::HTTP_OK,
+        description: 'Создание категории',
+        content: new JsonContent(
+            properties: [
+                new Property(property: 'data', ref: new Model(type: ArticleCategory::class))
+            ]
+        )
+    )]
     #[Route(name: 'api-v1-create-article-category', methods: [Request::METHOD_POST])]
     public function createAction(Request $request, #[CurrentUser] ?User $user): JsonResponse
     {
@@ -62,9 +84,22 @@ class ArticleCategoryController extends AbstractController
     }
 
     /**
-     * @throws ValidationException|NotFoundException
-     * @throws JsonException
+     * @throws ValidationException|NotFoundException|JsonException
      */
+    #[RequestBody(
+        content: new JsonContent(
+            properties: [new Property(property: 'title', description: 'Название категории', type: 'string')]
+        )
+    )]
+    #[Response(
+        response: \Symfony\Component\HttpFoundation\Response::HTTP_OK,
+        description: 'Обновление категории',
+        content: new JsonContent(
+            properties: [
+                new Property(property: 'data', ref: new Model(type: ArticleCategory::class))
+            ]
+        )
+    )]
     #[Route(path: '/{id<\d+>}', name: 'api-v1-update-article-category', methods: [Request::METHOD_PUT])]
     public function updateAction(int $id, Request $request, #[CurrentUser] ?User $user): JsonResponse
     {
@@ -92,6 +127,15 @@ class ArticleCategoryController extends AbstractController
     /**
      * @throws NotFoundException
      */
+    #[Response(
+        response: \Symfony\Component\HttpFoundation\Response::HTTP_OK,
+        description: 'Удаление категории',
+        content: new JsonContent(
+            properties: [
+                new Property(property: 'data', ref: new Model(type: ArticleCategory::class))
+            ]
+        )
+    )]
     #[Route(path: '/{id<\d+>}', name: 'api-v1-delete-article-category', methods: [Request::METHOD_DELETE])]
     public function deleteAction(int $id, #[CurrentUser] ?User $user): JsonResponse
     {
