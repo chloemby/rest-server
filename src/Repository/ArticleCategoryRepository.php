@@ -38,4 +38,13 @@ class ArticleCategoryRepository extends ServiceEntityRepository
             $this->getEntityManager()->flush();
         }
     }
+
+    public function save(ArticleCategory $articleCategory, bool $flush = false): void
+    {
+        $this->getEntityManager()->persist($articleCategory);
+
+        if ($flush) {
+            $this->getEntityManager()->flush();
+        }
+    }
 }
