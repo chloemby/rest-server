@@ -4,9 +4,10 @@ namespace App\Entity;
 
 use App\Repository\ArticleCategoryRepository;
 use Doctrine\ORM\Mapping as ORM;
+use JetBrains\PhpStorm\Internal\TentativeType;
 
 #[ORM\Entity(repositoryClass: ArticleCategoryRepository::class)]
-class ArticleCategory
+class ArticleCategory implements \JsonSerializable
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -74,9 +75,9 @@ class ArticleCategory
         return $this->createdBy;
     }
 
-    public function setCreatedBy(int $created_by): self
+    public function setCreatedBy(int $createdBy): self
     {
-        $this->createdBy = $created_by;
+        $this->createdBy = $createdBy;
 
         return $this;
     }
@@ -127,5 +128,18 @@ class ArticleCategory
         $this->updatedBy = $updatedBy;
 
         return $this;
+    }
+
+    public function jsonSerialize(): array
+    {
+        return [
+            'id' => $this->getId(),
+            'title' => $this->getTitle(),
+            'createdBy' => $this->getCreatedBy(),
+            'deletedAt' => $this->getDeletedAt()?->getTimestamp(),
+            'deletedBy' => $this->getDeletedBy(),
+            'updatedAt' => $this->getUpdatedAt()?->getTimestamp(),
+            'updatedBy' => $this->getUpdatedBy(),
+        ];
     }
 }

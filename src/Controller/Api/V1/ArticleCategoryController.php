@@ -23,8 +23,9 @@ class ArticleCategoryController extends AbstractController
 {
     private ArticleCategoryService $service;
 
-    public function __construct(ArticleCategoryService $service)
-    {
+    public function __construct(
+        ArticleCategoryService $service,
+    ) {
         $this->service = $service;
     }
 
@@ -37,7 +38,7 @@ class ArticleCategoryController extends AbstractController
 
         $articleCategory = $this->service->getById($id);
 
-        return new JsonResponse($articleCategory);
+        return new JsonResponse(['data' => $articleCategory]);
     }
 
     /**
