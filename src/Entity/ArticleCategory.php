@@ -24,10 +24,10 @@ class ArticleCategory implements \JsonSerializable
     private int $createdBy;
 
     #[ORM\Column(name: 'deleted_at', type: 'datetime_immutable', nullable: true)]
-    private \DateTimeImmutable $deletedAt;
+    private ?\DateTimeImmutable $deletedAt = null;
 
     #[ORM\Column(name: 'deleted_by', type: 'integer', nullable: true)]
-    private int $deletedBy;
+    private ?int $deletedBy = null;
 
     #[ORM\Column(name: 'updated_at', type: 'datetime_immutable')]
     private \DateTimeImmutable $updatedAt;
