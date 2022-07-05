@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controller\Api\V1;
 
 use App\Entity\Article;
+use App\Entity\Category;
 use App\Entity\User;
 use App\Exception\AppException;
 use App\Exception\NotFoundException;
@@ -14,6 +15,7 @@ use App\Service\Article\CreateArticleRequest;
 use App\Service\Article\UpdateArticleRequest;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Nelmio\ApiDocBundle\Annotation\Security;
+use OpenApi\Attributes\Items;
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Parameter;
 use OpenApi\Attributes\Property;
@@ -158,5 +160,37 @@ class ArticleController extends AbstractController
         $article = $this->service->delete($id, $user);
 
         return new JsonResponse(['data' => $article]);
+    }
+
+    #[Response(
+        response: \Symfony\Component\HttpFoundation\Response::HTTP_OK,
+        description: 'Получение списка статей',
+        content: new JsonContent(
+            properties: [
+                new Property(
+                    property: 'data',
+                    type: 'array',
+                    items: new Items(ref: new Model(type: Article::class))
+
+                )
+            ]
+        )
+    )]
+    #[Parameter(name: 'page', description: 'Номер страницы', in: 'query', required: true)]
+    #[Parameter(name: 'perPage', description: 'Количество статей на странице', in: 'query', required: true)]
+    #[Route(
+        name: 'api-v1-get-articles',
+        requirements: ['page' => '\d+', 'perPage' => '\d+'],
+        defaults: ['page' => 1, 'perPage' => 10],
+        methods: [Request::METHOD_GET]
+    )]
+    public function getAction(Request $request): JsonResponse
+    {
+        $page = $request->query->getInt('page', default: 1);
+        $perPage = $request->query->getInt('perPage', default: 10);
+
+        $articles = $this->service->getList($page, $perPage);
+
+        return new JsonResponse(['data' => $articles]);
     }
 }
