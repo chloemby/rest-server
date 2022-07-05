@@ -14,11 +14,13 @@ use App\Service\ArticleCategory\CreateCategoryRequest;
 use App\Service\ArticleCategory\UpdateCategoryRequest;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Nelmio\ApiDocBundle\Annotation\Security;
+use OpenApi\Attributes\Items;
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Parameter;
 use OpenApi\Attributes\Property;
 use OpenApi\Attributes\RequestBody;
 use OpenApi\Attributes\Response;
+use OpenApi\Attributes\Schema;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -140,7 +142,7 @@ class CategoryController extends AbstractController
             ]
         )
     )]
-    #[Route(path: '/{id<\d+>}', name: 'api-v1-delete-article-category', methods: [Request::METHOD_DELETE])]
+    #[Route(path: '/{id<\d+>}', name: 'api-v1-delete-category', methods: [Request::METHOD_DELETE])]
     public function deleteAction(int $id, #[CurrentUser] ?User $user): JsonResponse
     {
         if ($user === null) {
@@ -148,5 +150,25 @@ class CategoryController extends AbstractController
         }
 
         return new JsonResponse(['data' => $this->service->delete($id, $user)]);
+    }
+
+    #[Response(
+        response: \Symfony\Component\HttpFoundation\Response::HTTP_OK,
+        description: 'Получение списка категорий',
+        content: new JsonContent(
+            properties: [
+                new Property(
+                    property: 'data',
+                    type: 'array',
+                    items: new Items(ref: new Model(type: Category::class))
+
+                )
+            ]
+        )
+    )]
+    #[Route(name: 'api-v1-get-categories', methods: [Request::METHOD_GET])]
+    public function getAction(): JsonResponse
+    {
+        return new JsonResponse(['data' => $this->service->getAll()]);
     }
 }

@@ -45,7 +45,7 @@ class CategoryService
 
     public function getAll(): array
     {
-        return $this->repository->findBy(['deleted_at' => null]);
+        return $this->repository->findBy(['deletedAt' => null]);
     }
 
     /**
