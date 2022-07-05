@@ -151,6 +151,7 @@ class Article implements \JsonSerializable
             'id' => $this->getId(),
             'title' => $this->getTitle(),
             'text' => $this->getText(),
+            'createdAt' => $this->getCreatedAt()->getTimestamp(),
             'createdBy' => $this->getCreatedBy(),
             'deletedAt' => $this->getDeletedAt()?->getTimestamp(),
             'deletedBy' => $this->getDeletedBy(),

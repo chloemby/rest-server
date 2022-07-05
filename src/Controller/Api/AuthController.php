@@ -27,6 +27,9 @@ use SymfonyCasts\Bundle\VerifyEmail\Exception\VerifyEmailExceptionInterface;
 #[Route(path: '/api/auth')]
 class AuthController extends AbstractController
 {
+    /**
+     * @throws \App\Exception\ValidationException
+     */
     #[Parameter(name: 'username', description: 'Имя пользователя', required: true)]
     #[Parameter(name: 'password', description: 'Пароль пользователя', required: true)]
     #[Parameter(name: 'email', description: 'Электронная почта пользователя', required: true)]
@@ -51,7 +54,8 @@ class AuthController extends AbstractController
     #[Route(path: '/register', name: 'api-auth-register', methods: [Request::METHOD_POST])]
     public function registerAction(
         Request $request,
-        RegistrationService $service
+        LoginService $loginService,
+        RegistrationService $registrationService
     ): JsonResponse {
         $userRegistrationData = new UserRegistrationData(
             (string)$request->get('username'),
@@ -59,9 +63,12 @@ class AuthController extends AbstractController
             (string)$request->get('email')
         );
 
-        $user = $service->register($userRegistrationData);
+        $user = $registrationService->register($userRegistrationData);
 
-        return new JsonResponse(['username' => $user->getUserIdentifier()]);
+        return new JsonResponse([
+            'username' => $user->getUserIdentifier(),
+            'token' => $loginService->login($user),
+        ]);
     }
 
     #[RequestBody(
