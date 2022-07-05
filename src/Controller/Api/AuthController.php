@@ -10,6 +10,7 @@ use App\Service\Auth\Registration\RegistrationService;
 use App\Service\Auth\Registration\UserRegistrationData;
 use App\Service\Auth\Verification\EmailVerificationService;
 use App\UserRole;
+use Nelmio\ApiDocBundle\Annotation\Security;
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Parameter;
 use OpenApi\Attributes\Property;
@@ -109,6 +110,7 @@ class AuthController extends AbstractController
         return new JsonResponse(['token' => $service->login($user)]);
     }
 
+    #[Security(name: 'Bearer')]
     #[Route(path: '/verify', name: 'api-auth-verify-email', methods: [Request::METHOD_GET])]
     public function verifyAction(
         Request $request,

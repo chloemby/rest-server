@@ -13,6 +13,7 @@ use App\Service\ArticleCategory\CategoryService;
 use App\Service\ArticleCategory\CreateCategoryRequest;
 use App\Service\ArticleCategory\UpdateCategoryRequest;
 use Nelmio\ApiDocBundle\Annotation\Model;
+use Nelmio\ApiDocBundle\Annotation\Security;
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Parameter;
 use OpenApi\Attributes\Property;
@@ -56,6 +57,7 @@ class CategoryController extends AbstractController
     /**
      * @throws ValidationException
      */
+    #[Security(name: 'Bearer')]
     #[Parameter(name: 'title', description: 'Название категории', required: true)]
     #[Response(
         response: \Symfony\Component\HttpFoundation\Response::HTTP_OK,
@@ -86,6 +88,7 @@ class CategoryController extends AbstractController
     /**
      * @throws ValidationException|NotFoundException|JsonException
      */
+    #[Security(name: 'Bearer')]
     #[RequestBody(
         content: new JsonContent(
             properties: [new Property(property: 'title', description: 'Название категории', type: 'string')]
@@ -127,6 +130,7 @@ class CategoryController extends AbstractController
     /**
      * @throws NotFoundException
      */
+    #[Security(name: 'Bearer')]
     #[Response(
         response: \Symfony\Component\HttpFoundation\Response::HTTP_OK,
         description: 'Удаление категории',
