@@ -25,7 +25,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Security\Http\Attribute\CurrentUser;
 
-#[Route(path: '/api/v1/category')]
+#[Route(path: '/api/v1/categories')]
 class CategoryController extends AbstractController
 {
     private CategoryService $service;
