@@ -18,7 +18,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Security\Http\Attribute\CurrentUser;
 
-#[Route(path: '/api/v1')]
+#[Route(path: '/api/v1/articles')]
 class ArticleController extends AbstractController
 {
     private ArticleService $service;
@@ -31,7 +31,7 @@ class ArticleController extends AbstractController
     /**
      * @throws AppException
      */
-    #[Route(path: '/articles', name: 'api-v1-create-article', methods: [Request::METHOD_POST])]
+    #[Route(name: 'api-v1-create-article', methods: [Request::METHOD_POST])]
     public function createAction(Request $request, #[CurrentUser] ?User $user): JsonResponse
     {
         if ($user === null) {
@@ -52,7 +52,7 @@ class ArticleController extends AbstractController
     /**
      * @throws AppException
      */
-    #[Route(path: '/articles/{id<\d+>}', name: 'api-v1-update-article', methods: [Request::METHOD_PUT])]
+    #[Route(path: '/{id<\d+>}', name: 'api-v1-update-article', methods: [Request::METHOD_PUT])]
     public function updateAction(Request $request, int $id, #[CurrentUser] ?User $user): JsonResponse
     {
         if ($user === null) {
@@ -80,7 +80,7 @@ class ArticleController extends AbstractController
     /**
      * @throws NotFoundException
      */
-    #[Route(path: '/articles/{id<\d+>}', name: 'api-v1-get-article-by-id', methods: [Request::METHOD_GET])]
+    #[Route(path: '/{id<\d+>}', name: 'api-v1-get-article-by-id', methods: [Request::METHOD_GET])]
     public function getByIdAction(int $id): JsonResponse
     {
         $article = $this->service->get($id);
@@ -91,7 +91,7 @@ class ArticleController extends AbstractController
     /**
      * @throws NotFoundException
      */
-    #[Route(path: '/articles/{id<\d+>}', name: 'api-v1-delete-article-by-id', methods: [Request::METHOD_DELETE])]
+    #[Route(path: '/{id<\d+>}', name: 'api-v1-delete-article-by-id', methods: [Request::METHOD_DELETE])]
     public function deleteAction(int $id, #[CurrentUser] ?User $user): JsonResponse
     {
         if ($user === null) {
