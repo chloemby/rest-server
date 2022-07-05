@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Service\ArticleCategory;
 
-use App\Entity\ArticleCategory;
+use App\Entity\Category;
 use App\Exception\ValidationException;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
-class ArticleCategoryValidator
+class CategoryValidator
 {
     private ValidatorInterface $validator;
 
@@ -20,7 +20,7 @@ class ArticleCategoryValidator
     /**
      * @throws ValidationException
      */
-    public function validate(ArticleCategory $articleCategory): void
+    public function validate(Category $articleCategory): void
     {
         $violations = $this->validator->validate($articleCategory);
 

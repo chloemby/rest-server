@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Controller\Api\V1;
 
-use App\Entity\ArticleCategory;
+use App\Entity\Category;
 use JsonException;
 use App\Entity\User;
 use App\Exception\NotFoundException;
 use App\Exception\ValidationException;
-use App\Service\ArticleCategory\ArticleCategoryService;
-use App\Service\ArticleCategory\CreateArticleCategoryRequest;
-use App\Service\ArticleCategory\UpdateArticleCategoryRequest;
+use App\Service\ArticleCategory\CategoryService;
+use App\Service\ArticleCategory\CreateCategoryRequest;
+use App\Service\ArticleCategory\UpdateCategoryRequest;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use OpenApi\Attributes\JsonContent;
 use OpenApi\Attributes\Parameter;
@@ -25,13 +25,13 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Security\Http\Attribute\CurrentUser;
 
-#[Route(path: '/api/v1/article_category')]
-class ArticleCategoryController extends AbstractController
+#[Route(path: '/api/v1/category')]
+class CategoryController extends AbstractController
 {
-    private ArticleCategoryService $service;
+    private CategoryService $service;
 
     public function __construct(
-        ArticleCategoryService $service,
+        CategoryService $service,
     ) {
         $this->service = $service;
     }
@@ -39,9 +39,9 @@ class ArticleCategoryController extends AbstractController
     #[Response(
         response: \Symfony\Component\HttpFoundation\Response::HTTP_OK,
         description: 'Получение категории по ID',
-        content: new JsonContent(properties: [new Property(property: 'data', ref: new Model(type: ArticleCategory::class))])
+        content: new JsonContent(properties: [new Property(property: 'data', ref: new Model(type: Category::class))])
     )]
-    #[Route(path: '/{id<\d+>}', name: 'api-v1-get_article-category-by-id', methods: [Request::METHOD_GET])]
+    #[Route(path: '/{id<\d+>}', name: 'api-v1-get-category-by-id', methods: [Request::METHOD_GET])]
     public function getByIdAction(int $id, #[CurrentUser] ?User $user): JsonResponse
     {
         if ($user === null) {
@@ -62,25 +62,25 @@ class ArticleCategoryController extends AbstractController
         description: 'Создание категории',
         content: new JsonContent(
             properties: [
-                new Property(property: 'data', ref: new Model(type: ArticleCategory::class))
+                new Property(property: 'data', ref: new Model(type: Category::class))
             ]
         )
     )]
-    #[Route(name: 'api-v1-create-article-category', methods: [Request::METHOD_POST])]
+    #[Route(name: 'api-v1-create-category', methods: [Request::METHOD_POST])]
     public function createAction(Request $request, #[CurrentUser] ?User $user): JsonResponse
     {
         if ($user === null) {
             throw new AccessDeniedException();
         }
 
-        $createArticleCategoryRequest = new CreateArticleCategoryRequest(
+        $createCategoryRequest = new CreateCategoryRequest(
             (string)$request->get('title', ''),
             $user
         );
 
-        $articleCategory = $this->service->create($createArticleCategoryRequest);
+        $category = $this->service->create($createCategoryRequest);
 
-        return new JsonResponse(['data' => $articleCategory]);
+        return new JsonResponse(['data' => $category]);
     }
 
     /**
@@ -96,11 +96,11 @@ class ArticleCategoryController extends AbstractController
         description: 'Обновление категории',
         content: new JsonContent(
             properties: [
-                new Property(property: 'data', ref: new Model(type: ArticleCategory::class))
+                new Property(property: 'data', ref: new Model(type: Category::class))
             ]
         )
     )]
-    #[Route(path: '/{id<\d+>}', name: 'api-v1-update-article-category', methods: [Request::METHOD_PUT])]
+    #[Route(path: '/{id<\d+>}', name: 'api-v1-update-category', methods: [Request::METHOD_PUT])]
     public function updateAction(int $id, Request $request, #[CurrentUser] ?User $user): JsonResponse
     {
         if ($user === null) {
@@ -113,15 +113,15 @@ class ArticleCategoryController extends AbstractController
             throw new ValidationException('Не передано никаких параметров');
         }
 
-        $updateArticleCategoryRequest = new UpdateArticleCategoryRequest(
+        $updateCategoryRequest = new UpdateCategoryRequest(
             $id,
             (string)$content['title'],
             $user
         );
 
-        $articleCategory = $this->service->update($updateArticleCategoryRequest);
+        $category = $this->service->update($updateCategoryRequest);
 
-        return new JsonResponse(['data' => $articleCategory]);
+        return new JsonResponse(['data' => $category]);
     }
 
     /**
@@ -132,7 +132,7 @@ class ArticleCategoryController extends AbstractController
         description: 'Удаление категории',
         content: new JsonContent(
             properties: [
-                new Property(property: 'data', ref: new Model(type: ArticleCategory::class))
+                new Property(property: 'data', ref: new Model(type: Category::class))
             ]
         )
     )]

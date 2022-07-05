@@ -2,12 +2,12 @@
 
 namespace App\Entity;
 
-use App\Repository\ArticleCategoryRepository;
+use App\Repository\CategoryRepository;
 use Doctrine\ORM\Mapping as ORM;
 use JetBrains\PhpStorm\Internal\TentativeType;
 
-#[ORM\Entity(repositoryClass: ArticleCategoryRepository::class)]
-class ArticleCategory implements \JsonSerializable
+#[ORM\Entity(repositoryClass: CategoryRepository::class)]
+class Category implements \JsonSerializable
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -58,7 +58,7 @@ class ArticleCategory implements \JsonSerializable
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTimeImmutable
+    public function getCreatedAt(): \DateTimeImmutable
     {
         return $this->createdAt;
     }
@@ -135,6 +135,7 @@ class ArticleCategory implements \JsonSerializable
         return [
             'id' => $this->getId(),
             'title' => $this->getTitle(),
+            'createdAt' => $this->getCreatedAt()->getTimestamp(),
             'createdBy' => $this->getCreatedBy(),
             'deletedAt' => $this->getDeletedAt()?->getTimestamp(),
             'deletedBy' => $this->getDeletedBy(),

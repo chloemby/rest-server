@@ -19,22 +19,19 @@ final class Version20220704052807 extends AbstractMigration
 
     public function up(Schema $schema): void
     {
-        $this->addSql(<<<'SQL'
-            CREATE TABLE articles_categories 
+        $this->addSql('
+            CREATE TABLE article_category 
             (
                 article_id INT NOT NULL,
                 article_category_id INT NOT NULL,
                 INDEX(article_id),
                 INDEX(article_category_id)
             )
-        SQL);
+        ');
     }
 
     public function down(Schema $schema): void
     {
-        // this down() migration is auto-generated, please modify it to your needs
-        $this->addSql(<<<'SQL'
-            DROP TABLE articles_categories;
-        SQL);
+        $this->addSql('DROP TABLE article_category;');
     }
 }
