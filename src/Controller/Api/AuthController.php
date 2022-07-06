@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace App\Controller\Api;
 
 use App\Entity\User;
+use App\Exception\NotFoundException;
+use App\Exception\ValidationException;
 use App\Service\Auth\Login\LoginService;
+use App\Service\Auth\PasswordReset\PasswordResetService;
 use App\Service\Auth\Registration\RegistrationService;
 use App\Service\Auth\Registration\UserRegistrationData;
 use App\Service\Auth\Verification\EmailVerificationService;
@@ -23,13 +26,14 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Http\Attribute\CurrentUser;
+use SymfonyCasts\Bundle\ResetPassword\Exception\ResetPasswordExceptionInterface;
 use SymfonyCasts\Bundle\VerifyEmail\Exception\VerifyEmailExceptionInterface;
 
 #[Route(path: '/api/auth')]
 class AuthController extends AbstractController
 {
     /**
-     * @throws \App\Exception\ValidationException
+     * @throws ValidationException
      */
     #[Parameter(name: 'username', description: 'Имя пользователя', required: true)]
     #[Parameter(name: 'password', description: 'Пароль пользователя', required: true)]
@@ -128,5 +132,38 @@ class AuthController extends AbstractController
         }
 
         return new Response('Success');
+    }
+
+    /**
+     * @throws NotFoundException
+     */
+    #[Route(path: '/forgot', name: 'api-v1-forgot-password', methods: [Request::METHOD_POST])]
+    public function forgotPasswordAction(
+        Request $request,
+        PasswordResetService $service
+    ): JsonResponse {
+        $email = $request->get('email', '');
+
+        $service->forgot($email);
+
+        return new JsonResponse();
+    }
+
+    /**
+     * @throws ValidationException
+     * @throws ResetPasswordExceptionInterface
+     */
+    #[Route(path: '/reset', name: 'api-v1-reset-password', methods: [Request::METHOD_POST])]
+    public function resetPasswordAction(
+        Request $request,
+        PasswordResetService $service
+    ): JsonResponse {
+        $token = $request->get('token', '');
+        $password = $request->get('password', '');
+        $repeatPassword = $request->get('repeat_password', '');
+
+        $service->reset($token, $password, $repeatPassword);
+
+        return new JsonResponse();
     }
 }

@@ -4,7 +4,6 @@ namespace App\Entity;
 
 use App\Repository\CategoryRepository;
 use Doctrine\ORM\Mapping as ORM;
-use JetBrains\PhpStorm\Internal\TentativeType;
 
 #[ORM\Entity(repositoryClass: CategoryRepository::class)]
 class Category implements \JsonSerializable

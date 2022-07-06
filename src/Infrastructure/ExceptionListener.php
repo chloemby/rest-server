@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Infrastructure;
 
-
 use App\Exception\AppException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -24,7 +23,7 @@ class ExceptionListener
                 => new JsonResponse(['message' => 'Доступ запрещен'], Response::HTTP_FORBIDDEN),
 
             default
-                => new JsonResponse(['message' => 'Произошла неизвестная ошибка'], Response::HTTP_INTERNAL_SERVER_ERROR)
+                => new JsonResponse(['message' => $exception->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR)
         };
 
         $event->setResponse($response);
