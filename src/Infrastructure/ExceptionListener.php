@@ -23,7 +23,7 @@ class ExceptionListener
                 => new JsonResponse(['message' => 'Доступ запрещен'], Response::HTTP_FORBIDDEN),
 
             default
-                => new JsonResponse(['message' => $exception->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR)
+                => new JsonResponse(['message' => 'Произошла неизвестная ошибка'], Response::HTTP_INTERNAL_SERVER_ERROR)
         };
 
         $event->setResponse($response);
