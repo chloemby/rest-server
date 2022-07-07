@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\ArticleRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use JetBrains\PhpStorm\Internal\TentativeType;
 
@@ -38,10 +40,20 @@ class Article implements \JsonSerializable
     #[ORM\Column(type: 'string', length: 255)]
     private string $title;
 
+    /** @var Collection<Category> */
+    #[ORM\ManyToMany(targetEntity: Category::class)]
+    #[ORM\JoinTable(
+        name: 'article_category',
+        joinColumns: [new ORM\JoinColumn(name: 'article_id', referencedColumnName: 'id')],
+        inverseJoinColumns: [new ORM\JoinColumn(name: 'category_id', referencedColumnName: 'id')],
+    )]
+    private Collection $categories;
+
     public function __construct(User $creator)
     {
         $this->createdBy = $this->updatedBy = $creator->getId();
         $this->createdAt = $this->updatedAt = new \DateTimeImmutable();
+        $this->categories = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -157,6 +169,31 @@ class Article implements \JsonSerializable
             'deletedBy' => $this->getDeletedBy(),
             'updatedAt' => $this->getUpdatedAt()?->getTimestamp(),
             'updatedBy' => $this->getUpdatedBy(),
+            'categories' => $this->getCategories(),
         ];
+    }
+
+    /**
+     * @return Category[]
+     */
+    public function getCategories(): array
+    {
+        return $this->categories->toArray();
+    }
+
+    public function addCategory(Category $category): self
+    {
+        if (!$this->categories->contains($category)) {
+            $this->categories->add($category);
+        }
+
+        return $this;
+    }
+
+    public function removeCategory(Category $category): self
+    {
+        $this->categories->removeElement($category);
+
+        return $this;
     }
 }

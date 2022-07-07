@@ -9,16 +9,21 @@ use App\Entity\User;
 use App\Exception\NotFoundException;
 use App\Exception\ValidationException;
 use App\Repository\ArticleRepository;
+use App\Repository\CategoryRepository;
+use App\UserRole;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
 class ArticleService
 {
-    private ArticleRepository $repository;
+    private ArticleRepository $articleRepository;
+    private CategoryRepository $categoryRepository;
 
     public function __construct(
-        ArticleRepository $repository,
+        ArticleRepository $articleRepository,
+        CategoryRepository $categoryRepository
     ) {
-        $this->repository = $repository;
+        $this->articleRepository = $articleRepository;
+        $this->categoryRepository = $categoryRepository;
     }
 
     public function create(CreateArticleRequest $request): Article
@@ -27,7 +32,7 @@ class ArticleService
 
         $article->setTitle($request->getTitle())->setText($request->getText());
 
-        $this->repository->save($article, flush: true);
+        $this->articleRepository->save($article, flush: true);
 
         return $article;
     }
@@ -37,10 +42,14 @@ class ArticleService
      */
     public function update(UpdateArticleRequest $request): Article
     {
-        $article = $this->repository->find($request->getId());
+        $article = $this->articleRepository->find($request->getId());
 
         if ($article === null) {
             throw new NotFoundException('Статья не найдена');
+        }
+
+        if (!$this->isUserArticleOwner($request->getUser(), $article)) {
+            throw new AccessDeniedException();
         }
 
         $article->setTitle($request->getTitle())
@@ -48,7 +57,7 @@ class ArticleService
             ->setUpdatedBy($request->getUser()->getId())
             ->setUpdatedAt(new \DateTimeImmutable());
 
-        $this->repository->save($article, flush: true);
+        $this->articleRepository->save($article, flush: true);
 
         return $article;
     }
@@ -58,7 +67,7 @@ class ArticleService
      */
     public function get(int $id): ?Article
     {
-        $article = $this->repository->find($id);
+        $article = $this->articleRepository->find($id);
 
         if ($article === null) {
             throw new NotFoundException('Статья не найдена');
@@ -72,7 +81,7 @@ class ArticleService
      */
     public function delete(int $id, User $user): Article
     {
-        $article = $this->repository->find($id);
+        $article = $this->articleRepository->find($id);
 
         if ($article === null) {
             throw new NotFoundException('Статья не найдена');
@@ -82,7 +91,7 @@ class ArticleService
             throw new AccessDeniedException();
         }
 
-        $this->repository->delete($article, $user);
+        $this->articleRepository->delete($article, $user);
 
         return $article;
     }
@@ -106,11 +115,67 @@ class ArticleService
             throw new ValidationException('На странице не может быть меньше 1 статьи');
         }
 
-        return $this->repository->findBy(
+        return $this->articleRepository->findBy(
             criteria: ['deletedAt' => null],
             orderBy: ['createdAt' => 'ASC'],
             limit: $perPage,
             offset: $perPage * ($page - 1)
         );
+    }
+
+    /**
+     * @throws NotFoundException
+     */
+    public function addCategory(User $user, int $articleId, int $categoryId): Article
+    {
+        $article = $this->articleRepository->findOneBy(['id' => $articleId, 'deletedAt' => null]);
+
+        if ($article === null) {
+            throw new NotFoundException('Такой статьи не существует');
+        }
+
+        if (!$user->hasRole(UserRole::VERIFIED_USER) || !$this->isUserArticleOwner($user, $article)) {
+            throw new AccessDeniedException();
+        }
+
+        $category = $this->categoryRepository->findOneBy(['id' => $categoryId, 'deletedAt' => null]);
+
+        if ($category === null) {
+            throw new NotFoundException('Такой категории для статьи не существует');
+        }
+
+        $article->addCategory($category);
+
+        $this->articleRepository->save($article, flush: true);
+
+        return $article;
+    }
+
+    /**
+     * @throws NotFoundException
+     */
+    public function deleteCategory(User $user, int $articleId, int $categoryId): Article
+    {
+        $article = $this->articleRepository->findOneBy(['id' => $articleId, 'deletedAt' => null]);
+
+        if ($article === null) {
+            throw new NotFoundException('Такой статьи не существует');
+        }
+
+        if (!$user->hasRole(UserRole::VERIFIED_USER) || !$this->isUserArticleOwner($user, $article)) {
+            throw new AccessDeniedException();
+        }
+
+        $category = $this->categoryRepository->findOneBy(['id' => $categoryId, 'deletedAt' => null]);
+
+        if ($category === null) {
+            throw new NotFoundException('Такой категории для статьи не существует');
+        }
+
+        $article->removeCategory($category);
+
+        $this->articleRepository->save($article, flush: true);
+
+        return $article;
     }
 }
