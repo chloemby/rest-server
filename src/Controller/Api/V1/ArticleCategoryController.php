@@ -4,9 +4,15 @@ declare(strict_types=1);
 
 namespace App\Controller\Api\V1;
 
+use App\Entity\Article;
 use App\Entity\User;
 use App\Exception\NotFoundException;
 use App\Service\Article\ArticleService;
+use Nelmio\ApiDocBundle\Annotation\Model;
+use Nelmio\ApiDocBundle\Annotation\Security;
+use OpenApi\Attributes\JsonContent;
+use OpenApi\Attributes\Property;
+use OpenApi\Attributes\Response;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -27,6 +33,16 @@ class ArticleCategoryController extends AbstractController
     /**
      * @throws NotFoundException
      */
+    #[Security(name: 'Bearer')]
+    #[Response(
+        response: \Symfony\Component\HttpFoundation\Response::HTTP_OK,
+        description: 'Добавление категории для статьи',
+        content: new JsonContent(
+            properties: [
+                new Property(property: 'data', ref: new Model(type: Article::class))
+            ]
+        )
+    )]
     #[Route(path: '/{categoryId<\d+>}', name: 'api-v1-add-article-category', methods: [Request::METHOD_POST])]
     public function addAction(#[CurrentUser] ?User $user, int $articleId, int $categoryId): JsonResponse
     {
@@ -42,6 +58,16 @@ class ArticleCategoryController extends AbstractController
     /**
      * @throws NotFoundException
      */
+    #[Security(name: 'Bearer')]
+    #[Response(
+        response: \Symfony\Component\HttpFoundation\Response::HTTP_OK,
+        description: 'Удаление категории у статьи',
+        content: new JsonContent(
+            properties: [
+                new Property(property: 'data', ref: new Model(type: Article::class))
+            ]
+        )
+    )]
     #[Route(path: '/{categoryId<\d+>}', name: 'api-v1-delete-article-category', methods: [Request::METHOD_DELETE])]
     public function deleteAction(#[CurrentUser] ?User $user, int $articleId, int $categoryId): JsonResponse
     {
