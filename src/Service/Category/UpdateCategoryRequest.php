@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Service\ArticleCategory;
+namespace App\Service\Category;
 
 use App\Entity\User;
 
