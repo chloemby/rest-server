@@ -137,6 +137,15 @@ class AuthController extends AbstractController
     /**
      * @throws NotFoundException
      */
+    #[Parameter(name: 'email', description: 'Электронная почта пользователя', required: true)]
+    #[\OpenApi\Attributes\Response(
+        response: Response::HTTP_OK,
+        description: 'OK',
+        content: new JsonContent(
+            properties: [new Property(property: 'message', type: 'string')],
+            type: 'object'
+        )
+    )]
     #[Route(path: '/forgot', name: 'api-v1-forgot-password', methods: [Request::METHOD_POST])]
     public function forgotPasswordAction(
         Request $request,
@@ -146,13 +155,27 @@ class AuthController extends AbstractController
 
         $service->forgot($email);
 
-        return new JsonResponse();
+        return new JsonResponse(['message' => 'На указанный адрес электронной почты отправлено письмо для']);
     }
 
     /**
      * @throws ValidationException
      * @throws ResetPasswordExceptionInterface
      */
+    #[Parameter(
+        name: 'token',
+        description: 'Токен из ссылки, которая отправлена пользователю на почту (на форме ее можно получить из query-строки)',
+        required: true
+    )]
+    #[Parameter(name: 'password', description: 'Новый пароль', required: true)]
+    #[Parameter(name: 'repeat_password', description: 'Новый пароль еще раз', required: true)]
+    #[\OpenApi\Attributes\Response(response: Response::HTTP_OK, description: 'OK')]
+    #[\OpenApi\Attributes\Response(
+        response: Response::HTTP_BAD_REQUEST,
+        description: 'Произошла ошибка в процессе смены пароля',
+        content: new JsonContent(
+            properties: [new Property(property: 'message', type: 'string')], type: 'object'),
+    )]
     #[Route(path: '/reset', name: 'api-v1-reset-password', methods: [Request::METHOD_POST])]
     public function resetPasswordAction(
         Request $request,
