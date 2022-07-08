@@ -42,7 +42,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, \JsonSe
     #[ORM\Column(type: 'string', unique: true)]
     #[Assert\NotBlank(message: 'Не указан адрес электронной почты')]
     #[Assert\Email(message: 'Некорректный адрес электронной почты')]
-    #[Groups(groups: ['non_sensitive'])]
+    #[Groups(groups: ['sensitive'])]
     private string $email;
 
     #[ORM\Column(name: 'created_at', type: 'datetime_immutable', nullable: false)]
@@ -105,11 +105,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, \JsonSe
         return $this;
     }
 
-    /**
-     * A visual identifier that represents this user.
-     *
-     * @see UserInterface
-     */
     public function getUserIdentifier(): string
     {
         return $this->username;
@@ -164,7 +159,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, \JsonSe
             'deletedAt' => $this->getDeletedAt()?->getTimestamp(),
             'createdAt' => $this->getCreatedAt()->getTimestamp(),
             'username' => $this->getUserIdentifier(),
-            'email' => $this->getEmail(),
         ];
     }
 }
