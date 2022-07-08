@@ -63,7 +63,7 @@ class ResetPasswordSubscriber implements EventSubscriberInterface
         }
 
         $resetUrl = $this->urlGenerator->generate(
-            'api-v1-reset-password',
+            'api-v1-reset-password',    //TODO: здесь должен быть алиас ссылки на форму восстановления пароля
             ['token' => $resetToken->getToken()],
             UrlGeneratorInterface::ABSOLUTE_URL
         );
