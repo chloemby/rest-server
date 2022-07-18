@@ -16,12 +16,6 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 
 COPY . /var/www
 
-RUN composer install
-
-RUN bin/console lexik:jwt:generate-keypair --skip-if-exists
-
-RUN bin/console --no-interaction doctrine:migrations:migrate
-
 EXPOSE 9000
 
-CMD ["php-fpm"]
+CMD ["/bin/sh", "/var/www/build.sh"]
