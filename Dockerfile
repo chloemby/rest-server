@@ -16,6 +16,7 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 
 COPY . /var/www
 
+CMD ["/bin/sh", "/var/www/build.sh"]
+
 EXPOSE 9000
 
-CMD ["/bin/sh", "/var/www/build.sh"]
